@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectType>Python</ProjectType>
+    <StartupFile>scripts\envelope\plot_envelopes_overlay.py</StartupFile>
+    <SearchPath>scripts</SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
+    <ProjectGuid>{fe864b2a-3e13-4e71-a4ff-b4a54e0688d6}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup>
+    <Interpreter Include="env\">
+      <Id>env</Id>
+      <Version>3.9</Version>
+      <Description>env (Python 3.9 (64-bit))</Description>
+      <InterpreterPath>Scripts\python.exe</InterpreterPath>
+      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
+      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
+      <Architecture>X64</Architecture>
+    </Interpreter>
+    <Compile Include="scripts\envelope\plot_envelope.py" />
+    <Compile Include="scripts\envelope\plot_envelopes_heatmap.py" />
+    <Compile Include="scripts\envelope\plot_envelopes_overlay.py" />
+    <Compile Include="scripts\envelope\plot_example_envelope.py" />
+    <Compile Include="scripts\positions\plot_positions.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="scripts\" />
+    <Folder Include="scripts\envelope\" />
+    <Folder Include="scripts\positions\" />
+  </ItemGroup>
+</Project>
