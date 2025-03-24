@@ -12,6 +12,7 @@ pip install -r requirements.txt
 ```bash
 python scripts/plot_envelope.py
 ```
+Make sure your d-quant project has generated CSV output in assets/output_csv/ first.
 
 ## 🚀 To Get Started
 
