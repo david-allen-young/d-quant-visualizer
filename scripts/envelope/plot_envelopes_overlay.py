@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -6,8 +7,18 @@ import glob
 # Parameters
 target_length = 100
 
-# Load and interpolate all envelopes
-file_list = sorted(glob.glob("envelope*.csv"))
+# Get the directory of the script
+this_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Construct path to the CSV directory (one level up to /sample_data/)
+csv_dir = os.path.abspath(os.path.join(this_dir, "../../../d-quant/assets/output_csv/"))
+
+# Search for CSV files that match pattern
+file_list = sorted(glob.glob(os.path.join(csv_dir, "envelope*.csv")))
+
+print("Found files:", file_list)
+
+
 interpolated_envelopes = []
 
 for file in file_list:

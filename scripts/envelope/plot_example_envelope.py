@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -11,4 +12,7 @@ def plot_envelope(csv_file):
     plt.show()
 
 if __name__ == "__main__":
-    plot_envelope("../d-quant/assets/output_csv/envelope1.csv")
+    this_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_path = os.path.abspath(os.path.join(this_dir, "../../sample_data/envelope_example.csv"))
+    print(f"Reading file from: {csv_path}")
+    plot_envelope(csv_path)

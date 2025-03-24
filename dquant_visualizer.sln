@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "dquant_visualizer", "dquant_visualizer.pyproj", "{FE18BC95-B9D0-404D-AA5C-4B1029189744}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "dquant_visualizer", "dquant_visualizer.pyproj", "{FE864B2A-3E13-4E71-A4FF-B4A54E0688D6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,8 +11,8 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FE18BC95-B9D0-404D-AA5C-4B1029189744}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FE18BC95-B9D0-404D-AA5C-4B1029189744}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE864B2A-3E13-4E71-A4FF-B4A54E0688D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE864B2A-3E13-4E71-A4FF-B4A54E0688D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
