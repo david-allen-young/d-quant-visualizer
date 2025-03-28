@@ -11,11 +11,19 @@ data_dir = "./viz_batch"
 files = sorted(glob.glob(os.path.join(data_dir, "generated_morph2_*.csv")))
 
 envelopes = []
+
 for file in files:
     df = pd.read_csv(file)
-    envelopes.append(df["Expression"].values)
+    if "Expression" in df.columns and len(df["Expression"]) == 100:
+        envelopes.append(df["Expression"].values)
+    else:
+        print(f"Skipping malformed or empty file: {file}")
+
+if len(envelopes) == 0:
+    raise ValueError("No valid envelope data found. Check your input folder and file format.")
 
 X = np.array(envelopes)  # Shape: (n_samples, 100)
+
 
 # === PCA Projection ===
 pca = PCA(n_components=2)
