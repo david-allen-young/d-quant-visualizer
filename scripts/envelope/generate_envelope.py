@@ -10,7 +10,7 @@ target_length = 100
 
 def analyze(csv_dir, output_dir):
     file_list = sorted(glob.glob(os.path.join(csv_dir, "envelope*.csv")))
-    # print("Found files:", file_list)
+    print("Found files:", file_list)
 
     interpolated_envelopes = []
 
@@ -58,7 +58,7 @@ def morph_toward_input(mean, target_input, morph_factor=0.5, std=None, clamp_to_
         morphed = mean + bounded_delta
     return np.clip(morphed, 0, 1)
 
-def generate(mean_path, std_path, method="noise", count=5, strength=0.8, seed=None, save_dir=None):
+def generate(mean_path, std_path, method="noise", count=5, strength=0.8, seed=None, save_dir=None, input_csv_dir=None):
     mean = np.load(mean_path)
     std = np.load(std_path)
     x_vals = np.linspace(0, 1, target_length)
@@ -67,8 +67,9 @@ def generate(mean_path, std_path, method="noise", count=5, strength=0.8, seed=No
         np.random.seed(seed)
 
     if method == "morph":
-        input_dir = os.path.dirname(mean_path).replace("analysis", "output_csv")
-        file_list = sorted(glob.glob(os.path.join(input_dir, "envelope*.csv")))
+        if not input_csv_dir:
+            raise ValueError("--input_csv_dir must be specified when using 'morph' method.")
+        file_list = sorted(glob.glob(os.path.join(input_csv_dir, "envelope*.csv")))
         original_inputs = []
 
         for file in file_list:
@@ -114,6 +115,7 @@ def main():
     parser.add_argument("--output_dir", type=str, default="./analysis", help="Where to save analysis results.")
     parser.add_argument("--mean_path", type=str, help="Path to mean_envelope.npy for generate mode.")
     parser.add_argument("--std_path", type=str, help="Path to std_envelope.npy for generate mode.")
+    parser.add_argument("--input_csv_dir", type=str, help="Path to original input envelopes (required for morph mode).")
     parser.add_argument("--count", type=int, default=5, help="Number of envelopes to generate.")
     parser.add_argument("--strength", type=float, default=0.8, help="Strength of deviation (0-1).")
     parser.add_argument("--seed", type=int, default=None, help="Random seed for reproducibility.")
@@ -127,7 +129,8 @@ def main():
             print("Please specify --mean_path and --std_path for generate mode.")
         else:
             generate(args.mean_path, args.std_path, method=args.method, count=args.count,
-                     strength=args.strength, seed=args.seed, save_dir=args.save_dir)
+                     strength=args.strength, seed=args.seed, save_dir=args.save_dir,
+                     input_csv_dir=args.input_csv_dir)
 
 if __name__ == "__main__":
     main()
