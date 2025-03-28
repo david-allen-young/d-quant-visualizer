@@ -398,3 +398,7 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Ignore generated files
+scripts/envelope/generated_*.csv
+scripts/envelope/viz_batch/
