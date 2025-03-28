@@ -5,6 +5,18 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import glob
 
+# ============================================
+# Usage:
+#
+# Analyze envelope CSVs and generate mean/std:
+# python generate_envelope.py analyze --csv_dir "../../../d-quant/assets/output_csv/" --output_dir "./analysis"
+#
+# Generate new envelopes using morph2 (2-input blend with soft clamping):
+# python generate_envelope.py generate --method morph2 --mean_path ./analysis/mean_envelope.npy --std_path ./analysis/std_envelope.npy --input_csv_dir "../../../d-quant/assets/output_csv/" --count 100 --save_dir ./viz_batch
+#
+# ============================================
+
+
 # Parameters
 target_length = 100
 
