@@ -8,7 +8,6 @@ import glob
 # Parameters
 target_length = 100
 
-
 def analyze(csv_dir, output_dir):
     file_list = sorted(glob.glob(os.path.join(csv_dir, "envelope*.csv")))
     # print("Found files:", file_list)
@@ -51,8 +50,15 @@ def analyze(csv_dir, output_dir):
     plt.tight_layout()
     plt.show()
 
+def morph_toward_input(mean, target_input, morph_factor=0.5, std=None, clamp_to_std=True):
+    delta = target_input - mean
+    morphed = mean + morph_factor * delta
+    if clamp_to_std and std is not None:
+        bounded_delta = np.clip(morphed - mean, -std, std)
+        morphed = mean + bounded_delta
+    return np.clip(morphed, 0, 1)
 
-def generate(mean_path, std_path, count=5, strength=0.8, seed=None, save_dir=None):
+def generate(mean_path, std_path, method="noise", count=5, strength=0.8, seed=None, save_dir=None):
     mean = np.load(mean_path)
     std = np.load(std_path)
     x_vals = np.linspace(0, 1, target_length)
@@ -60,34 +66,50 @@ def generate(mean_path, std_path, count=5, strength=0.8, seed=None, save_dir=Non
     if seed is not None:
         np.random.seed(seed)
 
+    if method == "morph":
+        input_dir = os.path.dirname(mean_path).replace("analysis", "output_csv")
+        file_list = sorted(glob.glob(os.path.join(input_dir, "envelope*.csv")))
+        original_inputs = []
+
+        for file in file_list:
+            df = pd.read_csv(file)
+            orig_x = df["Position"].values
+            orig_y = df["Expression"].values
+            interp_y = np.interp(np.linspace(orig_x.min(), orig_x.max(), target_length), orig_x, orig_y)
+            original_inputs.append(interp_y)
+
     plt.figure(figsize=(12, 6))
     for i in range(count):
-        noise = np.random.randn(len(mean))
-        smooth_noise = np.convolve(noise, np.ones(10) / 10, mode='same')
-        smooth_noise /= np.max(np.abs(smooth_noise))
+        if method == "morph":
+            target = original_inputs[np.random.randint(len(original_inputs))]
+            morph_factor = np.random.uniform(0.2, 0.8)
+            envelope = morph_toward_input(mean, target, morph_factor, std=std, clamp_to_std=True)
+        else:  # noise-based
+            noise = np.random.randn(len(mean))
+            smooth_noise = np.convolve(noise, np.ones(10) / 10, mode='same')
+            smooth_noise /= np.max(np.abs(smooth_noise))
+            envelope = mean + smooth_noise * std * strength
+            envelope = np.clip(envelope, 0, 1)
 
-        envelope = mean + smooth_noise * std * strength
-        envelope = np.clip(envelope, 0, 1)
-        plt.plot(x_vals, envelope, label=f'Generated {i+1}', alpha=0.7)
+        plt.plot(x_vals, envelope, label=f'{method.capitalize()} {i+1}', alpha=0.7)
 
-        # Optional save
         if save_dir:
             os.makedirs(save_dir, exist_ok=True)
-            out_df = pd.DataFrame({"Position": x_vals, "Expression": envelope})
-            out_df.to_csv(os.path.join(save_dir, f"generated_envelope_{i+1}.csv"), index=False)
+            df = pd.DataFrame({"Position": x_vals, "Expression": envelope})
+            df.to_csv(os.path.join(save_dir, f"generated_{method}_{i+1}.csv"), index=False)
 
     plt.plot(x_vals, mean, color='black', linestyle='--', linewidth=2, label='Mean')
     plt.fill_between(x_vals, mean - std, mean + std, color='gray', alpha=0.3)
-    plt.title("Generated Envelopes within +/-1 Std Dev")
+    plt.title(f"Generated Envelopes using '{method}' method")
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
     plt.show()
 
-
 def main():
     parser = argparse.ArgumentParser(description="Analyze or generate MIDI expression envelopes.")
     parser.add_argument("mode", choices=["analyze", "generate"], help="Mode: analyze or generate.")
+    parser.add_argument("--method", choices=["noise", "morph"], default="noise", help="Generation method.")
     parser.add_argument("--csv_dir", type=str, default="./sample_data", help="Input directory for CSV files.")
     parser.add_argument("--output_dir", type=str, default="./analysis", help="Where to save analysis results.")
     parser.add_argument("--mean_path", type=str, help="Path to mean_envelope.npy for generate mode.")
@@ -104,8 +126,8 @@ def main():
         if not args.mean_path or not args.std_path:
             print("Please specify --mean_path and --std_path for generate mode.")
         else:
-            generate(args.mean_path, args.std_path, args.count, args.strength, args.seed, args.save_dir)
-
+            generate(args.mean_path, args.std_path, method=args.method, count=args.count,
+                     strength=args.strength, seed=args.seed, save_dir=args.save_dir)
 
 if __name__ == "__main__":
     main()
