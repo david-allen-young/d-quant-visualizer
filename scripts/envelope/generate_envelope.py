@@ -52,17 +52,20 @@ def analyze(csv_dir, output_dir):
 
 def morph_toward_input(mean, target_input, morph_factor=0.5, std=None, clamp_to_std=True):
     delta = target_input - mean
-    morphed = mean + morph_factor * delta
+    adaptive_morph = morph_factor * (std / (std.max() + 1e-8))
+    morphed = mean + adaptive_morph * delta
     if clamp_to_std and std is not None:
         bounded_delta = soft_clip(morphed - mean, std)
         morphed = mean + bounded_delta
     return np.clip(morphed, 0, 1)
 
 def morph_from_two_inputs(mean, input1, input2, morph_factor1=0.5, morph_factor2=0.5, std=None):
-    delta1 = input1 - mean
-    delta2 = input2 - mean
-    combined_delta = morph_factor1 * delta1 + morph_factor2 * delta2
-    soft_clamped = soft_clip(combined_delta, std)
+    trend = 0.5 * (input1 + input2)
+    delta = trend - mean
+    morph_factor = 0.5 * (morph_factor1 + morph_factor2)
+    adaptive_morph = morph_factor * (std / (std.max() + 1e-8))
+    morphed = mean + adaptive_morph * delta
+    soft_clamped = soft_clip(morphed - mean, std)
     return np.clip(mean + soft_clamped, 0, 1)
 
 def soft_clip(delta, std, softness=3.0):
@@ -97,7 +100,6 @@ def generate(mean_path, std_path, method="noise", count=5, strength=0.8, seed=No
             envelope = morph_toward_input(mean, target, morph_factor, std=std, clamp_to_std=True)
 
         elif method == "morph2":
-            # Pick two with similar deviation direction
             while True:
                 i1, i2 = np.random.choice(len(original_inputs), size=2, replace=False)
                 d1 = np.sign(original_inputs[i1] - mean)
