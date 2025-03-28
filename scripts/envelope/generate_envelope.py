@@ -54,9 +54,19 @@ def morph_toward_input(mean, target_input, morph_factor=0.5, std=None, clamp_to_
     delta = target_input - mean
     morphed = mean + morph_factor * delta
     if clamp_to_std and std is not None:
-        bounded_delta = np.clip(morphed - mean, -std, std)
+        bounded_delta = soft_clip(morphed - mean, std)
         morphed = mean + bounded_delta
     return np.clip(morphed, 0, 1)
+
+def morph_from_two_inputs(mean, input1, input2, morph_factor1=0.5, morph_factor2=0.5, std=None):
+    delta1 = input1 - mean
+    delta2 = input2 - mean
+    combined_delta = morph_factor1 * delta1 + morph_factor2 * delta2
+    soft_clamped = soft_clip(combined_delta, std)
+    return np.clip(mean + soft_clamped, 0, 1)
+
+def soft_clip(delta, std, softness=3.0):
+    return std * np.tanh(delta / (std + 1e-8) * softness)
 
 def generate(mean_path, std_path, method="noise", count=5, strength=0.8, seed=None, save_dir=None, input_csv_dir=None):
     mean = np.load(mean_path)
@@ -66,9 +76,9 @@ def generate(mean_path, std_path, method="noise", count=5, strength=0.8, seed=No
     if seed is not None:
         np.random.seed(seed)
 
-    if method == "morph":
+    if method in ["morph", "morph2"]:
         if not input_csv_dir:
-            raise ValueError("--input_csv_dir must be specified when using 'morph' method.")
+            raise ValueError("--input_csv_dir must be specified when using 'morph' or 'morph2' method.")
         file_list = sorted(glob.glob(os.path.join(input_csv_dir, "envelope*.csv")))
         original_inputs = []
 
@@ -85,6 +95,19 @@ def generate(mean_path, std_path, method="noise", count=5, strength=0.8, seed=No
             target = original_inputs[np.random.randint(len(original_inputs))]
             morph_factor = np.random.uniform(0.2, 0.8)
             envelope = morph_toward_input(mean, target, morph_factor, std=std, clamp_to_std=True)
+
+        elif method == "morph2":
+            # Pick two with similar deviation direction
+            while True:
+                i1, i2 = np.random.choice(len(original_inputs), size=2, replace=False)
+                d1 = np.sign(original_inputs[i1] - mean)
+                d2 = np.sign(original_inputs[i2] - mean)
+                agreement = np.mean(d1 == d2)
+                if agreement > 0.8:
+                    break
+            f1, f2 = np.random.uniform(0.2, 0.8), np.random.uniform(0.2, 0.8)
+            envelope = morph_from_two_inputs(mean, original_inputs[i1], original_inputs[i2], f1, f2, std=std)
+
         else:  # noise-based
             noise = np.random.randn(len(mean))
             smooth_noise = np.convolve(noise, np.ones(10) / 10, mode='same')
@@ -110,12 +133,12 @@ def generate(mean_path, std_path, method="noise", count=5, strength=0.8, seed=No
 def main():
     parser = argparse.ArgumentParser(description="Analyze or generate MIDI expression envelopes.")
     parser.add_argument("mode", choices=["analyze", "generate"], help="Mode: analyze or generate.")
-    parser.add_argument("--method", choices=["noise", "morph"], default="noise", help="Generation method.")
+    parser.add_argument("--method", choices=["noise", "morph", "morph2"], default="noise", help="Generation method.")
     parser.add_argument("--csv_dir", type=str, default="./sample_data", help="Input directory for CSV files.")
     parser.add_argument("--output_dir", type=str, default="./analysis", help="Where to save analysis results.")
     parser.add_argument("--mean_path", type=str, help="Path to mean_envelope.npy for generate mode.")
     parser.add_argument("--std_path", type=str, help="Path to std_envelope.npy for generate mode.")
-    parser.add_argument("--input_csv_dir", type=str, help="Path to original input envelopes (required for morph mode).")
+    parser.add_argument("--input_csv_dir", type=str, help="Path to original input envelopes (required for morph modes).")
     parser.add_argument("--count", type=int, default=5, help="Number of envelopes to generate.")
     parser.add_argument("--strength", type=float, default=0.8, help="Strength of deviation (0-1).")
     parser.add_argument("--seed", type=int, default=None, help="Random seed for reproducibility.")
