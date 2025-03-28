@@ -13,11 +13,20 @@ files = sorted(glob.glob(os.path.join(data_dir, "generated_morph2_*.csv")))
 envelopes = []
 
 for file in files:
+    print(f"Reading {file}")
     df = pd.read_csv(file)
-    if "Expression" in df.columns and len(df["Expression"]) == 100:
-        envelopes.append(df["Expression"].values)
+    print(f"Columns: {df.columns}")
+    print(f"Length: {len(df)}")
+
+    if "Expression" in df.columns:
+        expr = df["Expression"].values[:100]  # safely trim to 100 samples
+        if len(expr) == 100:
+            envelopes.append(expr)
+        else:
+            print(f"Error: Skipping short envelope in {file}")
     else:
-        print(f"Skipping malformed or empty file: {file}")
+        print(f"Error: 'Expression' column not found in {file}")
+
 
 if len(envelopes) == 0:
     raise ValueError("No valid envelope data found. Check your input folder and file format.")
