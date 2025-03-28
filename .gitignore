@@ -399,4 +399,8 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
+# Ignore virtual python environments
 env/
+
+# Ignore generated envelope outputs
+scripts/envelope/viz_batch/generated_*.csv
