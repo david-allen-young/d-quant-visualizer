@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ProjectType>Python</ProjectType>
-    <StartupFile>scripts\envelope\visualize_variation.py</StartupFile>
+    <StartupFile>scripts\positions\plot_positions.py</StartupFile>
     <SearchPath>scripts</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
