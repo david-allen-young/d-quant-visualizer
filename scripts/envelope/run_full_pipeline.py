@@ -7,8 +7,8 @@ def run_cmd(cmd):
     print(f"[RUN] {' '.join(cmd)}")
     subprocess.run(cmd, check=True)
 
-def load_config_if_no_args():
-    config_file = "pipeline_wrapper_config.json"
+def load_config_if_no_args(script_dir):
+    config_file = os.path.join(script_dir, "pipeline_wrapper_config.json")
     print(f"[INFO] Checking for config: {config_file}")
     if os.path.exists(config_file):
         print(f"[INFO] Found config file: {config_file}")
@@ -20,7 +20,9 @@ def load_config_if_no_args():
     return None
 
 def main():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
     print(f"[INFO] Current working directory: {os.getcwd()}")
+    print(f"[INFO] Script location: {script_dir}")
 
     parser = argparse.ArgumentParser(description="Run full expression analysis pipeline")
     parser.add_argument("--midi_path", help="Path to training MIDI file")
@@ -35,7 +37,7 @@ def main():
 
     if not args.midi_path and not args.category and not args.analyze_exe:
         print("[INFO] No required CLI args provided. Attempting to load config file.")
-        config = load_config_if_no_args()
+        config = load_config_if_no_args(script_dir)
         if not config:
             raise RuntimeError("No arguments provided and no pipeline_wrapper_config.json found.")
         args.midi_path = config["midi_path"]
@@ -46,8 +48,8 @@ def main():
     if not all([args.midi_path, args.category, args.analyze_exe]):
         raise ValueError("--midi_path, --category, and --analyze_exe are required.")
 
-    # Derived folder structure
-    base = "assets"
+    # Derived folder structure relative to script directory
+    base = os.path.join(script_dir, "assets")
     env_dir = os.path.join(base, "envelopes_csv", args.category)
     morph_dir = os.path.join(base, "morph_csv", args.category)
     morph_gen_dir = os.path.join(morph_dir, "generated")
@@ -57,26 +59,27 @@ def main():
     os.makedirs(morph_gen_dir, exist_ok=True)
 
     # Step 1: Create config for analyze_dynamics and run it
+    pipeline_cfg_path = os.path.join(script_dir, "pipeline_config.json")
     pipeline_cfg = {
         "dynamizer_midi_path": args.midi_path,
         "envelope_csv_dir": env_dir
     }
-    print(f"[INFO] Writing analyze_dynamics config to pipeline_config.json")
-    with open("pipeline_config.json", "w") as f:
+    print(f"[INFO] Writing analyze_dynamics config to {pipeline_cfg_path}")
+    with open(pipeline_cfg_path, "w") as f:
         json.dump(pipeline_cfg, f, indent=2)
 
     run_cmd([args.analyze_exe])
 
     # Step 2: Analyze envelopes (generate mean/std)
     run_cmd([
-        "python", "generate_envelope.py", "analyze",
+        "python", os.path.join(script_dir, "generate_envelope.py"), "analyze",
         "--csv_dir", env_dir,
         "--output_dir", morph_dir
     ])
 
     # Step 3: Generate morph2 variations
     run_cmd([
-        "python", "generate_envelope.py", "generate",
+        "python", os.path.join(script_dir, "generate_envelope.py"), "generate",
         "--method", "morph2",
         "--mean_path", os.path.join(morph_dir, "mean_envelope.npy"),
         "--std_path", os.path.join(morph_dir, "std_envelope.npy"),
@@ -87,7 +90,7 @@ def main():
 
     # Step 4: Visualize final output
     run_cmd([
-        "python", "visualize_variation.py",
+        "python", os.path.join(script_dir, "visualize_variation.py"),
         "--input_dir", morph_gen_dir
     ])
 
