@@ -11,7 +11,8 @@ target_length = 100
 this_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Construct path to the CSV directory (one level up to /sample_data/)
-csv_dir = os.path.abspath(os.path.join(this_dir, "../../../d-quant/assets/output_csv/"))
+#csv_dir = os.path.abspath(os.path.join(this_dir, "../../../d-quant/assets/output_csv/"))
+csv_dir = os.path.abspath(os.path.join(this_dir, "../../../d-quant/assets/envelopes_dim_csv/"))
 
 # Search for CSV files that match pattern
 file_list = sorted(glob.glob(os.path.join(csv_dir, "envelope*.csv")))

@@ -2,13 +2,14 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ProjectType>Python</ProjectType>
-    <StartupFile>scripts\positions\generate_and_visualize_rhythm_variation.py</StartupFile>
+    <StartupFile>scripts\envelope\run_full_pipeline.py</StartupFile>
     <SearchPath>scripts</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
     <ProjectGuid>{fe864b2a-3e13-4e71-a4ff-b4a54e0688d6}</ProjectGuid>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="scripts\envelope\run_full_pipeline.py" />
     <Compile Include="scripts\positions\generate_and_visualize_rhythm_variation.py" />
     <Compile Include="scripts\positions\plot_positions_2.py" />
     <Compile Include="scripts\positions\plot_positions_3.py" />
@@ -34,5 +35,8 @@
     <Folder Include="scripts\" />
     <Folder Include="scripts\envelope\" />
     <Folder Include="scripts\positions\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="scripts\envelope\pipeline_wrapper_config.json" />
   </ItemGroup>
 </Project>
