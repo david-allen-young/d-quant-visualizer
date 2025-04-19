@@ -3,6 +3,9 @@ import subprocess
 import os
 import json
 
+import sys
+python_bin = sys.executable
+
 def run_cmd(cmd, cwd=None):
     print(f"[RUN] {' '.join(cmd)}")
     subprocess.run(cmd, check=True, cwd=cwd)
@@ -83,14 +86,14 @@ def main():
 
     # Step 2: Analyze envelopes (generate mean/std)
     run_cmd([
-        "python", os.path.join(script_dir, "generate_envelope.py"), "analyze",
+        python_bin, os.path.join(script_dir, "generate_envelope.py"), "analyze",
         "--csv_dir", env_dir,
         "--output_dir", morph_dir
     ])
 
     # Step 3: Generate morph2 variations
     run_cmd([
-        "python", os.path.join(script_dir, "generate_envelope.py"), "generate",
+        python_bin, os.path.join(script_dir, "generate_envelope.py"), "generate",
         "--method", "morph2",
         "--mean_path", os.path.join(morph_dir, "mean_envelope.npy"),
         "--std_path", os.path.join(morph_dir, "std_envelope.npy"),
@@ -101,7 +104,7 @@ def main():
 
     # Step 4: Visualize final output
     run_cmd([
-        "python", os.path.join(script_dir, "visualize_variation.py"),
+        python_bin, os.path.join(script_dir, "visualize_variation.py"),
         "--input_dir", morph_gen_dir
     ])
 
