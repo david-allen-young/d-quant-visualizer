@@ -3,9 +3,9 @@ import subprocess
 import os
 import json
 
-def run_cmd(cmd):
+def run_cmd(cmd, cwd=None):
     print(f"[RUN] {' '.join(cmd)}")
-    subprocess.run(cmd, check=True)
+    subprocess.run(cmd, check=True, cwd=cwd)
 
 def load_config_if_no_args(script_dir):
     config_file = os.path.join(script_dir, "pipeline_wrapper_config.json")
@@ -69,7 +69,10 @@ def main():
         json.dump(pipeline_cfg, f, indent=2)
 
     analyze_exe_dir = os.path.dirname(args.analyze_exe)
-    target_config_path = os.path.join(analyze_exe_dir, "pipeline_config.json")
+    # Old (mixed slashes can cause issues)
+    # target_config_path = os.path.join(analyze_exe_dir, "pipeline_config.json")
+    # New (safe on Windows and cross-platform)
+    target_config_path = os.path.normpath(os.path.join(analyze_exe_dir, "pipeline_config.json"))
     print(f"[INFO] Copying config to: {target_config_path}")
     with open(target_config_path, "w") as f:
         json.dump(pipeline_cfg, f, indent=2)
