@@ -68,7 +68,14 @@ def main():
     with open(pipeline_cfg_path, "w") as f:
         json.dump(pipeline_cfg, f, indent=2)
 
+    analyze_exe_dir = os.path.dirname(args.analyze_exe)
+    target_config_path = os.path.join(analyze_exe_dir, "pipeline_config.json")
+    print(f"[INFO] Copying config to: {target_config_path}")
+    with open(target_config_path, "w") as f:
+        json.dump(pipeline_cfg, f, indent=2)
+
     run_cmd([args.analyze_exe])
+
 
     # Step 2: Analyze envelopes (generate mean/std)
     run_cmd([
