@@ -7,8 +7,9 @@ from sklearn.decomposition import PCA
 from scipy.spatial.distance import pdist, squareform
 
 # Load generated envelopes
-this_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.join(this_dir, "viz_batch")
+#this_dir = os.path.dirname(os.path.abspath(__file__))
+#data_dir = os.path.join(this_dir, "viz_batch")
+data_dir = "C:/GitHub/d-quant/assets/morph_csv/diminuendo/generated"
 files = sorted(glob.glob(os.path.join(data_dir, "generated_morph2_*.csv")))
 
 envelopes = []
