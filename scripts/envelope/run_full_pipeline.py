@@ -77,7 +77,8 @@ def main():
     with open(target_config_path, "w") as f:
         json.dump(pipeline_cfg, f, indent=2)
 
-    run_cmd([args.analyze_exe])
+    run_cmd([args.analyze_exe], cwd=os.path.dirname(args.analyze_exe))
+
 
 
     # Step 2: Analyze envelopes (generate mean/std)
