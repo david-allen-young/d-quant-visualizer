@@ -36,4 +36,7 @@
     <Folder Include="scripts\envelope\" />
     <Folder Include="scripts\positions\" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="scripts\envelope\pipeline_wrapper_config.json" />
+  </ItemGroup>
 </Project>
