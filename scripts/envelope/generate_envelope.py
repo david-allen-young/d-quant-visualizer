@@ -62,23 +62,27 @@ def analyze(csv_dir, output_dir):
     plt.tight_layout()
     plt.show()
 
-def morph_toward_input(mean, target_input, morph_factor=0.5, std=None, clamp_to_std=True):
+def morph_toward_input(mean, target_input, morph_factor=0.5, std=None, clamp_to_std=True, category="crescendo"):
     delta = target_input - mean
     adaptive_morph = morph_factor * (std / (std.max() + 1e-8))
     morphed = mean + adaptive_morph * delta
-    if clamp_to_std and std is not None:
+    if clamp_to_std and std is not None and category != "stable":
         bounded_delta = soft_clip(morphed - mean, std)
         morphed = mean + bounded_delta
     return np.clip(morphed, 0, 1)
 
-def morph_from_two_inputs(mean, input1, input2, morph_factor1=0.5, morph_factor2=0.5, std=None):
+def morph_from_two_inputs(mean, input1, input2, morph_factor1=0.5, morph_factor2=0.5, std=None, category="crescendo"):
     trend = 0.5 * (input1 + input2)
     delta = trend - mean
     morph_factor = 0.5 * (morph_factor1 + morph_factor2)
     adaptive_morph = morph_factor * (std / (std.max() + 1e-8))
     morphed = mean + adaptive_morph * delta
-    soft_clamped = soft_clip(morphed - mean, std)
-    return np.clip(mean + soft_clamped, 0, 1)
+    # soft_clamped = soft_clip(morphed - mean, std)
+    # return np.clip(mean + soft_clamped, 0, 1)
+    if category != "stable":
+        morphed = mean + soft_clip(morphed - mean, std)
+    return np.clip(morphed, 0, 1)
+
 
 def soft_clip(delta, std, softness=3.0):
     return std * np.tanh(delta / (std + 1e-8) * softness)
@@ -117,7 +121,7 @@ def generate(mean_path, std_path, method="noise", count=5, strength=0.8, seed=No
         if method == "morph":
             target = original_inputs[np.random.randint(len(original_inputs))]
             morph_factor = np.random.uniform(0.2, 0.8)
-            envelope = morph_toward_input(mean, target, morph_factor, std=std, clamp_to_std=True)
+            envelope = morph_toward_input(mean, target, morph_factor, std=std, clamp_to_std=True, category=category)
 
         elif method == "morph2":
             while True:
@@ -128,7 +132,7 @@ def generate(mean_path, std_path, method="noise", count=5, strength=0.8, seed=No
                 if agreement > 0.8:
                     break
             f1, f2 = np.random.uniform(0.2, 0.8), np.random.uniform(0.2, 0.8)
-            envelope = morph_from_two_inputs(mean, original_inputs[i1], original_inputs[i2], f1, f2, std=std)
+            envelope = morph_from_two_inputs(mean, original_inputs[i1], original_inputs[i2], f1, f2, std=std, category=category)
 
         else:  # noise-based
             noise = np.random.randn(len(mean))
