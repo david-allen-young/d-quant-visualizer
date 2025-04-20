@@ -99,7 +99,8 @@ def main():
         "--std_path", os.path.join(morph_dir, "std_envelope.npy"),
         "--input_csv_dir", env_dir,
         "--count", str(args.count),
-        "--save_dir", morph_gen_dir
+        "--save_dir", morph_gen_dir,
+        "--category", args.category,
     ])
 
     # Step 4: Visualize final output
