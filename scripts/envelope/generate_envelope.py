@@ -83,7 +83,11 @@ def morph_from_two_inputs(mean, input1, input2, morph_factor1=0.5, morph_factor2
 def soft_clip(delta, std, softness=3.0):
     return std * np.tanh(delta / (std + 1e-8) * softness)
 
-def generate(mean_path, std_path, method="noise", count=5, strength=0.8, seed=None, save_dir=None, input_csv_dir=None):
+def center_envelope(env):
+    mean = np.mean(env)
+    return env - mean
+
+def generate(mean_path, std_path, method="noise", count=5, strength=0.8, seed=None, save_dir=None, input_csv_dir=None, category="crescendo"):
     mean = np.load(mean_path)
     std = np.load(std_path)
     x_vals = np.linspace(0, 1, target_length)
@@ -102,7 +106,11 @@ def generate(mean_path, std_path, method="noise", count=5, strength=0.8, seed=No
             orig_x = df["Position"].values
             orig_y = df["Expression"].values
             interp_y = np.interp(np.linspace(orig_x.min(), orig_x.max(), target_length), orig_x, orig_y)
-            original_inputs.append(interp_y)
+            if category == "stable":
+                centered_y = center_envelope(interp_y)
+                original_inputs.append(centered_y)
+            else:
+                original_inputs.append(interp_y)
 
     plt.figure(figsize=(12, 6))
     for i in range(count):
@@ -157,6 +165,7 @@ def main():
     parser.add_argument("--strength", type=float, default=0.8, help="Strength of deviation (0-1).")
     parser.add_argument("--seed", type=int, default=None, help="Random seed for reproducibility.")
     parser.add_argument("--save_dir", type=str, help="Optional output directory for generated envelopes.")
+    parser.add_argument("--category", type=str, default="crescendo", help="Data category: crescendo, diminuendo, or stable")
     args = parser.parse_args()
 
     if args.mode == "analyze":
@@ -167,7 +176,7 @@ def main():
         else:
             generate(args.mean_path, args.std_path, method=args.method, count=args.count,
                      strength=args.strength, seed=args.seed, save_dir=args.save_dir,
-                     input_csv_dir=args.input_csv_dir)
+                     input_csv_dir=args.input_csv_dir, category=args.category)
 
 if __name__ == "__main__":
     main()
