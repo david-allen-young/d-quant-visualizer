@@ -1,4 +1,4 @@
 {
-  "dynamizer_midi_path": "C:/GitHub/d-quant/assets/midi/Dynamizer_Training_FLAT_0001.midi",
-  "envelope_csv_dir": "C:\\GitHub\\d-quant-visualizer\\scripts\\envelope\\assets\\envelopes_csv\\stable"
+  "dynamizer_midi_path": "C:\\GitHub\\d-quant\\assets\\training\\dynamizer\\stable\\Dynamizer_Training_FLAT_0001.midi",
+  "envelope_csv_dir": "C:\\GitHub\\d-quant\\assets\\analysis\\dynamizer\\stable"
 }
