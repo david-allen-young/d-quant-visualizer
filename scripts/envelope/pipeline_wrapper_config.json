@@ -1,5 +1,5 @@
 {
-  "midi_path": "C:/GitHub/d-quant/assets/midi/Dynamizer_Training_FLAT_0001.midi",
+  "midi_path": "Dynamizer_Training_FLAT_0001.midi",
   "category": "stable",
   "count": 100,
   "analyze_exe": "C:/GitHub/d-quant/out/build/x64-Debug/tools/analyze_dynamics/analyze_dynamics.exe"
