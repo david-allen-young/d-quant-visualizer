@@ -52,26 +52,37 @@ def main():
         raise ValueError("--midi_path, --category, and --analyze_exe are required.")
 
     # Derived folder structure relative to script directory
-    base = os.path.join(script_dir, "assets")
-    env_dir = os.path.join(base, "envelopes_csv", args.category)
-    morph_dir = os.path.join(base, "morph_csv", args.category)
-    morph_gen_dir = os.path.join(morph_dir, "generated")
+    # base = os.path.join(script_dir, "assets")
+    # env_dir = os.path.join(base, "envelopes_csv", args.category)
+    # morph_dir = os.path.join(base, "morph_csv", args.category)
+    # morph_gen_dir = os.path.join(morph_dir, "generated")
+    
+    dynamizer_training = os.path.normpath(os.path.join(script_dir, "..", "d-quant", "assets", "training", "dynamizer", args.category))
+    dynamizer_analysis = os.path.normpath(os.path.join(script_dir, "..", "d-quant", "assets", "analysis", "dynamizer", args.category))
+    dynamizer_generation = os.path.normpath(os.path.join(script_dir, "..", "d-quant", "assets", "generation", "dynamizer", args.category))
 
-    os.makedirs(env_dir, exist_ok=True)
-    os.makedirs(morph_dir, exist_ok=True)
-    os.makedirs(morph_gen_dir, exist_ok=True)
+    # os.makedirs(env_dir, exist_ok=True)
+    # os.makedirs(morph_dir, exist_ok=True)
+    # os.makedirs(morph_gen_dir, exist_ok=True)
+
+    os.makedirs(dynamizer_training, exist_ok=True)
+    os.makedirs(dynamizer_analysis, exist_ok=True)
+    os.makedirs(dynamizer_generation, exist_ok=True)
+
 
     # Step 1: Create config for analyze_dynamics and run it
-    pipeline_cfg_path = os.path.join(script_dir, "pipeline_config.json")
+    pipeline_cfg_path = os.path.normpath(os.path.join(script_dir, "pipeline_config.json"))
     pipeline_cfg = {
-        "dynamizer_midi_path": args.midi_path,
-        "envelope_csv_dir": env_dir
+        # "dynamizer_midi_path": args.midi_path,
+        # "envelope_csv_dir": env_dir
+        "dynamizer_midi_path": os.path.normpath(os.path.join(dynamizer_training, args.midi_path)),
+        "envelope_csv_dir": dynamizer_analysis
     }
     print(f"[INFO] Writing analyze_dynamics config to {pipeline_cfg_path}")
     with open(pipeline_cfg_path, "w") as f:
         json.dump(pipeline_cfg, f, indent=2)
 
-    analyze_exe_dir = os.path.dirname(args.analyze_exe)
+    analyze_exe_dir = os.path.normpath(os.path.dirname(args.analyze_exe))
     # Old (mixed slashes can cause issues)
     # target_config_path = os.path.join(analyze_exe_dir, "pipeline_config.json")
     # New (safe on Windows and cross-platform)
@@ -86,27 +97,27 @@ def main():
 
     # Step 2: Analyze envelopes (generate mean/std)
     run_cmd([
-        python_bin, os.path.join(script_dir, "generate_envelope.py"), "analyze",
-        "--csv_dir", env_dir,
-        "--output_dir", morph_dir
+        python_bin, os.path.normpath(os.path.join(script_dir, "generate_envelope.py")), "analyze",
+        "--csv_dir", dynamizer_analysis,
+        "--output_dir", dynamizer_analysis
     ])
 
     # Step 3: Generate morph2 variations
     run_cmd([
-        python_bin, os.path.join(script_dir, "generate_envelope.py"), "generate",
+        python_bin, os.path.normpath(os.path.join(script_dir, "generate_envelope.py")), "generate",
         "--method", "morph2",
-        "--mean_path", os.path.join(morph_dir, "mean_envelope.npy"),
-        "--std_path", os.path.join(morph_dir, "std_envelope.npy"),
-        "--input_csv_dir", env_dir,
+        "--mean_path", os.path.normpath(os.path.join(dynamizer_analysis, "mean_envelope.npy")),
+        "--std_path", os.path.normpath(os.path.join(dynamizer_analysis, "std_envelope.npy")),
+        "--input_csv_dir", dynamizer_analysis,
         "--count", str(args.count),
-        "--save_dir", morph_gen_dir,
+        "--save_dir", dynamizer_generation,
         "--category", args.category,
     ])
 
     # Step 4: Visualize final output
     run_cmd([
-        python_bin, os.path.join(script_dir, "visualize_variation.py"),
-        "--input_dir", morph_gen_dir
+        python_bin, os.path.normpath(os.path.join(script_dir, "visualize_variation.py")),
+        "--input_dir", dynamizer_generation
     ])
 
 if __name__ == "__main__":
