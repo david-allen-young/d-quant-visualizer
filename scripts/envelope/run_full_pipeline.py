@@ -22,6 +22,30 @@ def load_config_if_no_args(script_dir):
     print("[INFO] No config file found.")
     return None
 
+def find_repo_root(script_dir, target_folder_name="d-quant"):
+    current = script_dir
+    while True:
+        candidate = os.path.join(current, target_folder_name)
+        if os.path.isdir(candidate):
+            return os.path.normpath(candidate)
+        parent = os.path.dirname(current)
+        if parent == current:
+            raise RuntimeError(f"Could not locate {target_folder_name} folder from {script_dir}")
+        current = parent
+
+def find_sibling_repo(script_dir, sibling_name="d-quant"):
+    current = os.path.abspath(script_dir)
+    while True:
+        parent = os.path.dirname(current)
+        candidate = os.path.join(parent, sibling_name)
+        print(f"[DEBUG] Trying: {candidate}")
+        if os.path.isdir(candidate):
+            return os.path.normpath(candidate)
+        if parent == current:
+            break  # root reached
+        current = parent
+    raise RuntimeError(f"Could not find sibling folder '{sibling_name}' relative to {script_dir}")
+
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     print(f"[INFO] Current working directory: {os.getcwd()}")
@@ -57,9 +81,15 @@ def main():
     # morph_dir = os.path.join(base, "morph_csv", args.category)
     # morph_gen_dir = os.path.join(morph_dir, "generated")
     
-    dynamizer_training = os.path.normpath(os.path.join(script_dir, "..", "d-quant", "assets", "training", "dynamizer", args.category))
-    dynamizer_analysis = os.path.normpath(os.path.join(script_dir, "..", "d-quant", "assets", "analysis", "dynamizer", args.category))
-    dynamizer_generation = os.path.normpath(os.path.join(script_dir, "..", "d-quant", "assets", "generation", "dynamizer", args.category))
+    # repo_root = find_repo_root(script_dir)
+    # dquant_root = os.path.join(repo_root, "d-quant")
+    dquant_root = find_sibling_repo(script_dir, "d-quant")
+
+    dynamizer_training = os.path.normpath(os.path.join(dquant_root, "assets", "training", "dynamizer", args.category))
+    dynamizer_analysis = os.path.normpath(os.path.join(dquant_root, "assets", "analysis", "dynamizer", args.category))
+    dynamizer_generation = os.path.normpath(os.path.join(dquant_root, "assets", "generation", "dynamizer", args.category))
+
+    print("[DEBUG] dynamizer_training == ", dynamizer_training)
 
     # os.makedirs(env_dir, exist_ok=True)
     # os.makedirs(morph_dir, exist_ok=True)
